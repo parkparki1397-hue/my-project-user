@@ -446,11 +446,11 @@ function escapeHtml(str) {
 }
 
 // ========== توابع پشتیبان در Gist ==========
-const GITHUB_TOKEN = "GITHUB_TOKEN=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";
+const GITHUB_TOKEN = "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";
 let GIST_ID = null;
 
 async function backupToGist() {
-  if (GITHUB_TOKEN === "GITHUB_TOKEN=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" && GITHUB_TOKEN.includes("اینجا")) {
+  if (GITHUB_TOKEN === "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" && GITHUB_TOKEN.includes("اینجا")) {
     alert("⚠️ ابتدا توکن گیت‌هاب را در کد (خط const GITHUB_TOKEN) وارد کنید");
     return;
   }
