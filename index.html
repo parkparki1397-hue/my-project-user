@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -6,40 +6,50 @@
   <title>پرونده پزشکی | بایگانی</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- اضافه کردن کتابخانه‌های مورد نیاز برای تقویم شمسی -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 </head>
 <body>
   <div class="container">
-    <!-- Sidebar -->
     <div class="sidebar">
       <h2><i class="fas fa-hospital"></i> پرونده پزشکی</h2>
       <div class="search">
         <input type="text" id="searchInput" placeholder="جستجوی بیمار..." onkeyup="searchPatients()">
       </div>
       <button onclick="showAddPatientModal()" class="add-btn"><i class="fas fa-plus"></i> بیمار جدید</button>
+      <div style="display: flex; gap: 10px; margin: 15px 0;">
+  <button onclick="backupToGist()" class="add-btn" style="background: #27ae60;"><i class="fas fa-cloud-upload-alt"></i> پشتیبان در گیت</button>
+  <button onclick="restoreFromGist()" class="add-btn" style="background: #e67e22;"><i class="fas fa-cloud-download-alt"></i> بازیابی از گیت</button>
+</div>
       <div id="patientsList" class="patients-list"></div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
       <div id="welcome" class="welcome">
         <h1>به بایگانی پرونده پزشکی خوش آمدید</h1>
         <p>بیماری را از لیست سمت چپ انتخاب کنید</p>
       </div>
-
-      <div id="patientDetail" class="patient-detail hidden">
-        <!-- JS will fill this -->
-      </div>
+      <div id="patientDetail" class="patient-detail hidden"></div>
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- Modal افزودن بیمار جدید -->
   <div id="addPatientModal" class="modal hidden">
-    <!-- فرم اضافه کردن بیمار -->
     <div class="modal-content">
       <h3>بیمار جدید</h3>
       <input type="text" id="pName" placeholder="نام و نام خانوادگی" required>
+      <input type="text" id="pNationalId" placeholder="کد ملی">
       <input type="tel" id="pPhone" placeholder="شماره تماس">
-      <input type="date" id="pBirth">
+      <label>تاریخ تولد:</label>
+      <input type="text" id="pBirth" class="datepicker" placeholder="انتخاب تاریخ تولد">
+      <input type="text" id="pJob" placeholder="شغل">
+      <input type="text" id="pAddress" placeholder="آدرس">
+      <textarea id="pDescription" placeholder="توضیحات تکمیلی بیمار..."></textarea>
       <label>عکس پروفایل:</label>
       <input type="file" id="pPhoto" accept="image/*">
       <button onclick="addPatient()">ذخیره بیمار</button>
@@ -47,17 +57,69 @@
     </div>
   </div>
 
-  <!-- Modal ثبت مراجعه -->
+  <!-- Modal ثبت مراجعه جدید -->
   <div id="visitModal" class="modal hidden">
     <div class="modal-content">
       <h3>ثبت مراجعه جدید</h3>
-      <input type="date" id="visitDate">
+      <label>تاریخ مراجعه:</label>
+      <input type="text" id="visitDate" class="datepicker" placeholder="انتخاب تاریخ مراجعه">
+      <select id="visitType">
+        <option value="حضوری">حضوری</option>
+        <option value="مجازی">مجازی</option>
+      </select>
       <textarea id="visitDesc" placeholder="شرح ماوقع..."></textarea>
+      <label>پیوست‌ها (می‌توانید چند فایل انتخاب کنید):</label>
+      <input type="file" id="visitFiles" multiple accept=".pdf,.jpg,.png,.docx,.txt">
       <button onclick="saveVisit()">ثبت مراجعه</button>
       <button onclick="closeModal('visitModal')">انصراف</button>
     </div>
   </div>
 
+  <!-- Modal ویرایش مراجعه -->
+  <div id="editVisitModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>ویرایش مراجعه</h3>
+      <label>تاریخ مراجعه:</label>
+      <input type="text" id="editVisitDate" class="datepicker" placeholder="انتخاب تاریخ مراجعه">
+      <select id="editVisitType">
+        <option value="حضوری">حضوری</option>
+        <option value="مجازی">مجازی</option>
+      </select>
+      <textarea id="editVisitDesc" placeholder="شرح ماوقع..."></textarea>
+      <label>افزودن پیوست جدید:</label>
+      <input type="file" id="editVisitFiles" multiple accept=".pdf,.jpg,.png,.docx,.txt">
+      <button onclick="updateVisit()">ذخیره تغییرات</button>
+      <button onclick="closeModal('editVisitModal')">انصراف</button>
+    </div>
+  </div>
+
+  <!-- Modal مدیریت نوبت‌های بعدی -->
+  <div id="appointmentsModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>نوبت‌های بعدی (حداکثر 5 نوبت)</h3>
+      <div id="appointmentsList"></div>
+      <label>تاریخ نوبت جدید:</label>
+      <input type="text" id="newAppointmentDate" class="datepicker" placeholder="انتخاب تاریخ نوبت">
+      <button onclick="addAppointment()">اضافه کردن نوبت</button>
+      <button onclick="closeModal('appointmentsModal')">بستن</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script>
+    // فعال‌سازی تقویم شمسی برای همه فیلدهای دارای کلاس datepicker
+    $(document).ready(function() {
+      $('.datepicker').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        calendar: {
+          persian: {
+            locale: 'fa'
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>

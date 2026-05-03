@@ -14,7 +14,6 @@ body {
   height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   width: 320px;
   background: #2c3e50;
@@ -86,7 +85,6 @@ body {
   border: 2px solid #ecf0f1;
 }
 
-/* Main Content */
 .main-content {
   flex: 1;
   padding: 30px;
@@ -151,7 +149,6 @@ body {
   border-right: 3px solid #3498db;
 }
 
-/* Modals */
 .modal {
   position: fixed;
   top: 0;
@@ -172,6 +169,8 @@ body {
   width: 90%;
   max-width: 450px;
   color: #333;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .modal-content h3 {
@@ -180,7 +179,8 @@ body {
 }
 
 .modal-content input,
-.modal-content textarea {
+.modal-content textarea,
+.modal-content select {
   width: 100%;
   padding: 10px;
   margin: 8px 0 15px;
@@ -258,4 +258,24 @@ body {
 
 .attachment-link:hover {
   text-decoration: underline;
+}
+
+.btn-small {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.btn-small:hover {
+  background: #2980b9;
+}
+
+.attachments-list {
+  margin-top: 8px;
+  font-size: 13px;
 }
