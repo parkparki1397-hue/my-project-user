@@ -575,7 +575,7 @@ function showCopyDialog(gistId) {
 }
 
 async function restoreFromGist() {
-  if (GITHUB_TOKEN === "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" && GITHUB_TOKEN.includes("اینجا")) {
+  if (GITHUB_TOKEN === "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" && GITHUB_TOKEN.includes("اینجا")) {
     alert("⚠️ ابتدا توکن گیت‌هاب را در کد (خط const GITHUB_TOKEN) وارد کنید");
     return;
   }
