@@ -444,178 +444,54 @@ function escapeHtml(str) {
     return m;
   });
 }
+// ========== توابع پشتیبان محلی (ساده و بدون خطا) ==========
 
-// ========== توابع پشتیبان در Gist ==========
-const GITHUB_TOKEN = "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";
-let GIST_ID = null;
-
-async function backupToGist() {
-  if (GITHUB_TOKEN === "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" && GITHUB_TOKEN.includes("اینجا")) {
-    alert("⚠️ ابتدا توکن گیت‌هاب را در کد (خط const GITHUB_TOKEN) وارد کنید");
-    return;
-  }
-  
-  const data = {
-    description: "پشتیبان پرونده پزشکی - " + new Date().toLocaleDateString('fa-IR'),
-    public: false,
-    files: {
-      "medical_records_backup.json": {
-        content: JSON.stringify(patients, null, 2)
-      }
-    }
-  };
-  
-  try {
-    let url = "https://api.github.com/gists";
-    let method = "POST";
-    
-    if (GIST_ID) {
-      url = `https://api.github.com/gists/${GIST_ID}`;
-      method = "PATCH";
-    }
-    
-    const response = await fetch(url, {
-      method: method,
-      headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    
-    if (response.ok) {
-      const newGistId = result.id;
-      showCopyDialog(newGistId);
-      if (!GIST_ID) {
-        console.log("GIST ID برای بازیابی بعدی:", newGistId);
-      }
-    } else {
-      alert("❌ خطا: " + (result.message || "مشخص نیست"));
-    }
-  } catch (error) {
-    alert("❌ خطا در ارتباط با گیت‌هاب: " + error.message);
-  }
+function backupLocal() {
+  const dataStr = JSON.stringify(patients, null, 2);
+  const blob = new Blob([dataStr], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `پشتیبان_پزشکی_${new Date().toLocaleDateString('fa-IR').replace(/\//g, '-')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert("✅ فایل پشتیبان با موفقیت ذخیره شد!");
 }
 
-function showCopyDialog(gistId) {
-  const existingBox = document.getElementById('gistCopyBox');
-  if (existingBox) existingBox.remove();
-  
-  const box = document.createElement('div');
-  box.id = 'gistCopyBox';
-  box.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #2c3e50;
-    color: white;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-    z-index: 10000;
-    text-align: center;
-    min-width: 350px;
-    direction: rtl;
-    font-family: 'Tahoma', 'Segoe UI', sans-serif;
-  `;
-  
-  box.innerHTML = `
-    <h3 style="margin: 0 0 15px 0; color: #2ecc71;">✅ پشتیبان ذخیره شد</h3>
-    <p style="margin: 10px 0;">کد GIST ID خود را برای بازیابی بعدی ذخیره کنید:</p>
-    <div style="
-      background: #1a252f;
-      padding: 12px;
-      border-radius: 8px;
-      margin: 15px 0;
-      font-family: monospace;
-      font-size: 14px;
-      word-break: break-all;
-      direction: ltr;
-      text-align: center;
-    ">${gistId}</div>
-    <button id="copyGistBtn" style="
-      background: #3498db;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 5px;
-      font-size: 14px;
-    "><i class="fas fa-copy"></i> کپی کردن کد</button>
-    <button id="closeGistBoxBtn" style="
-      background: #e74c3c;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 5px;
-      font-size: 14px;
-    ">بستن</button>
-    <p style="font-size: 12px; margin-top: 15px; color: #bdc3c7;">⚠️ این کد را در جای امن ذخیره کنید</p>
-  `;
-  
-  document.body.appendChild(box);
-  
-  document.getElementById('copyGistBtn').onclick = () => {
-    navigator.clipboard.writeText(gistId).then(() => {
-      alert("✅ کد GIST ID کپی شد!");
-    }).catch(() => {
-      alert("❌ لطفاً دستی کپی کنید: " + gistId);
-    });
+function restoreLocal() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const restoredPatients = JSON.parse(e.target.result);
+        if (confirm(`آیا از بازیابی ${restoredPatients.length} بیمار اطمینان دارید؟ داده‌های فعلی جایگزین می‌شود.`)) {
+          patients = restoredPatients;
+          saveToLocal();
+          renderPatientsList();
+          if (currentPatientId && patients.find(p => p.id === currentPatientId)) {
+            showPatientDetail(currentPatientId);
+          } else {
+            document.getElementById('welcome').classList.remove('hidden');
+            document.getElementById('patientDetail').classList.add('hidden');
+            currentPatientId = null;
+          }
+          alert("✅ بازیابی با موفقیت انجام شد!");
+        }
+      } catch (error) {
+        alert("❌ فایل پشتیبان معتبر نیست: " + error.message);
+      }
+    };
+    reader.readAsText(file);
   };
-  
-  document.getElementById('closeGistBoxBtn').onclick = () => {
-    box.remove();
-  };
+  input.click();
 }
 
-async function restoreFromGist() {
-  if (GITHUB_TOKEN === "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" && GITHUB_TOKEN.includes("اینجا")) {
-    alert("⚠️ ابتدا توکن گیت‌هاب را در کد (خط const GITHUB_TOKEN) وارد کنید");
-    return;
-  }
-  
-  const gistId = prompt("لطفاً GIST ID (کد پشتیبان) را وارد کنید:");
-  if (!gistId) return;
-  
-  try {
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`
-      }
-    });
-    
-    if (!response.ok) throw new Error("Gist یافت نشد");
-    
-    const gist = await response.json();
-    const fileContent = gist.files["medical_records_backup.json"]?.content;
-    
-    if (!fileContent) {
-      alert("فایل پشتیبان در این Gist یافت نشد");
-      return;
-    }
-    
-    const restoredPatients = JSON.parse(fileContent);
-    if (confirm(`آیا از بازیابی ${restoredPatients.length} بیمار اطمینان دارید؟ داده‌های فعلی جایگزین می‌شود.`)) {
-      patients = restoredPatients;
-      saveToLocal();
-      renderPatientsList();
-      if (currentPatientId) {
-        showPatientDetail(currentPatientId);
-      } else {
-        document.getElementById('welcome').classList.remove('hidden');
-        document.getElementById('patientDetail').classList.add('hidden');
-      }
-      alert("✅ بازیابی با موفقیت انجام شد!");
-    }
-  } catch (error) {
-    alert("خطا در بازیابی: " + error.message);
-  }
-}
 
 renderPatientsList();
