@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پرونده پزشکی | بایگانی</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2><i class="fas fa-hospital"></i> پرونده پزشکی</h2>
+      <div class="search">
+        <input type="text" id="searchInput" placeholder="جستجوی بیمار..." onkeyup="searchPatients()">
+      </div>
+      <button onclick="showAddPatientModal()" class="add-btn"><i class="fas fa-plus"></i> بیمار جدید</button>
+      <div id="patientsList" class="patients-list"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div id="welcome" class="welcome">
+        <h1>به بایگانی پرونده پزشکی خوش آمدید</h1>
+        <p>بیماری را از لیست سمت چپ انتخاب کنید</p>
+      </div>
+
+      <div id="patientDetail" class="patient-detail hidden">
+        <!-- JS will fill this -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="addPatientModal" class="modal hidden">
+    <!-- فرم اضافه کردن بیمار -->
+    <div class="modal-content">
+      <h3>بیمار جدید</h3>
+      <input type="text" id="pName" placeholder="نام و نام خانوادگی" required>
+      <input type="tel" id="pPhone" placeholder="شماره تماس">
+      <input type="date" id="pBirth">
+      <label>عکس پروفایل:</label>
+      <input type="file" id="pPhoto" accept="image/*">
+      <button onclick="addPatient()">ذخیره بیمار</button>
+      <button onclick="closeModal('addPatientModal')">انصراف</button>
+    </div>
+  </div>
+
+  <!-- Modal ثبت مراجعه -->
+  <div id="visitModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>ثبت مراجعه جدید</h3>
+      <input type="date" id="visitDate">
+      <textarea id="visitDesc" placeholder="شرح ماوقع..."></textarea>
+      <button onclick="saveVisit()">ثبت مراجعه</button>
+      <button onclick="closeModal('visitModal')">انصراف</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
